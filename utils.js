@@ -6,7 +6,7 @@ const findQuery = require('objection-find')
 const formatDate = (date) => moment(date).format('YYYY-MM-DD HH:mm:ss')
 
 
-exports.createService = function (modelClass) {
+exports.createService = function (modelClass, schema) {
   const service = {}
 
   service.findById = async function (id) {
@@ -20,9 +20,11 @@ exports.createService = function (modelClass) {
   }
 
   service.update = async function (id, data) {
+    const { error, value } = schema.validate(data)
+    if (error) throw error
     delete data.id
     data.updatedAt = formatDate()
-    return modelClass.query().where({ id }).update(data)
+    return modelClass.query().where({ id }).update(value)
   }
 
   service.create = async function (data) {
